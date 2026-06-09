@@ -2,6 +2,7 @@ package deploys
 
 import (
 	"archive/tar"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -63,13 +64,28 @@ func (cd *CertDeployer) DeployCertificate(domain, url string) error {
 
 	logger.Info("证书下载完成", "file", tarFile)
 
+	stat, err := os.Stat(tarFile)
+    if err == nil {
+        logger.Info("证书文件信息", "file", tarFile, "size", stat.Size())
+    }
+    
+    f, err := os.Open(tarFile)
+    if err == nil {
+        buf := make([]byte, 128)
+        n, _ := f.Read(buf)
+        f.Close()
+    
+        logger.Info("证书文件头HEX", "hex", hex.EncodeToString(buf[:n]))
+        logger.Info("证书文件头TEXT", "text", string(buf[:n]))
+    }
+
 	// 确保下载失败时清理
-	defer func() {
-		if _, err := os.Stat(tarFile); err == nil {
+//	defer func() {
+//		if _, err := os.Stat(tarFile); err == nil {
 			// 部署成功后删除tar文件
-			os.Remove(tarFile)
-		}
-	}()
+//			os.Remove(tarFile)
+//		}
+//	}()
 
 	// 检查是否配置了SSL目录
 	sslConfig := config.GetConfig().SSL
