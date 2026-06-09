@@ -65,10 +65,30 @@ func DownloadFile(ctx context.Context, httpClient *http.Client, accessKey, downl
 	defer resp.Body.Close()
 
 	// 检查响应状态
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("下载失败，状态码: %d", resp.StatusCode)
-	}
+    if resp.StatusCode != http.StatusOK {
+        body, _ := io.ReadAll(resp.Body)
+        if len(body) > 500 {
+            body = body[:500]
+        }
+        return fmt.Errorf("下载失败，状态码: %d, body: %s", resp.StatusCode, string(body))
+    }
 
+	// 打印下载完成文件信息
+    stat, err := os.Stat(filename)
+    if err == nil {
+        fmt.Printf("证书文件信息 size=%d 文件=%s\n", stat.Size(), filename)
+    }
+    
+    // 打开文件读取前 128 字节查看内容类型
+    f, err := os.Open(filename)
+    if err == nil {
+        buf := make([]byte, 128)
+        n, _ := f.Read(buf)
+        f.Close()
+    
+        fmt.Printf("文件头HEX=%x\n", buf[:n])
+        fmt.Printf("文件头TEXT=%s\n", string(buf[:n]))
+    }
 	// 确保目标目录存在
 	if err := os.MkdirAll(filepath.Dir(filePath), 0755); err != nil {
 		return err
