@@ -18,8 +18,8 @@
 
 从 [GitHub Releases](https://github.com/https-cert/deploy/releases) 下载适合你系统的版本：
 
-```bash
-# Linux
+```shell
+# **Linux** 操作步骤
 wget https://github.com/https-cert/deploy/releases/latest/download/anssl-linux-amd64.tar.gz
 tar -xzf anssl-linux-amd64.tar.gz
 chmod +x anssl
